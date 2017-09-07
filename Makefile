@@ -15,7 +15,7 @@ LDFLAGS=-L/usr/remote/mipsel/lib/gcc/mipsel-buildroot-linux-uclibc/4.6.3 -lgcc
 ASMSOURCE=add_test.s
 
 SREC_OUTPUT=$(ASMSOURCE:.s=.srec)
-VERILOG_OUTPUT=$(ASMOBJ:.o=.v)
+VERILOG_OUTPUT=$(ASMSOURCE:.s=.v)
 OBJECTS=$(ASMSOURCE:.s=.o)
 
 all: $(OBJECTS)
