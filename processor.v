@@ -113,11 +113,18 @@ module ALU (input [3:0] aluop, input [31:0] a, b, output reg [31:0] out, output 
 endmodule
 
 module ALU_control (input [3:0] aluop_from_control, input [5:0] functioncode, output [3:0] aluop_out);
-  
+
 endmodule
 // -------------------------- //
 
+module registers(input [25:21] read_reg1, input [20:16] read_reg2, input [15:11] write_reg, input [31:0] write_data, output reg [31:0] read_data1, read_data2);
+  
+endmodule
 
+// -------- Memory ---------- //
+module data_memory(input [31:0] address, write_data, input memwrite, memread, output reg [31:0] read_data);
+  reg [31:0] mem[0:255];
+endmodule
 
 module jump_address_constructor(input [25:0] instruction, input [31:28] PC_plus_4, output reg [31:0] out);
   always @(*)
