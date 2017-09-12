@@ -117,12 +117,12 @@ module ALU_control (input [3:0] aluop_from_control, input [5:0] functioncode, ou
 endmodule
 // -------------------------- //
 
-module registers(input [25:21] read_reg1, input [20:16] read_reg2, input [15:11] write_reg, input [31:0] write_data, output reg [31:0] read_data1, read_data2);
-  
+module registers(input [25:21] read_reg1, input [20:16] read_reg2, input [15:11] write_reg, input [31:0] write_data, input clk, output reg [31:0] read_data1, read_data2);
+
 endmodule
 
 // -------- Memory ---------- //
-module data_memory(input [31:0] address, write_data, input memwrite, memread, output reg [31:0] read_data);
+module data_memory(input [31:0] address, write_data, input memwrite, memread, clk, output reg [31:0] read_data);
   reg [31:0] mem[0:255];
 endmodule
 
