@@ -98,12 +98,22 @@ endmodule
 // -------------------------------------------------------
 
 // --------- ALU ------------ //
-module ALU (input [3:0] aluop, input [31:0] a, b, output [31:0] out);
-
+module ALU (input [3:0] aluop, input [31:0] a, b, output reg [31:0] out, output reg zero);
+  always @(*) begin
+    case (aluop)
+      `ALU_AND: out = a & b;
+      `ALU_OR: out = a | b;
+      `ALU_add: out = a + b;
+      `ALU_sub: out = a - b;
+      `ALU_slt: out = a < b;
+      default: out = `undefined;
+    endcase
+    zero = (out == 32'h0000);
+  end
 endmodule
 
 module ALU_control (input [3:0] aluop_from_control, input [5:0] functioncode, output [3:0] aluop_out);
-
+  
 endmodule
 // -------------------------- //
 
