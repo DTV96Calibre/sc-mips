@@ -27,7 +27,7 @@ module adder (input [31:0] a, input [31:0] b, output [31:0] out);
     // $display("adder out: %h", out);
 endmodule
 
-module memory (input [31:0] address, output [31:0] instruction);
+module instruction_memory (input [31:0] address, output [31:0] instruction);
   reg [31:0] mem [32'h0100000: 32'h0101000];
   initial begin
     $readmemh("jumps.in", mem);
@@ -148,7 +148,7 @@ module test;
   clock_gen clk(clock);
   PC p_counter(mux_pc, clock, address);
   adder pc_incrementer(address, four, adder_mux);
-  memory mem(address, instruction);
+  instruction_memory imem(address, instruction);
   control control(instruction[31:26], regdst, jump, branch, memread, memtoreg, aluop, regwrite, alusrc, memwrite, invertzero);
   mux2_1 jump_mux(jump, jump_address, adder_mux, mux_pc);
   jump_address_constructor jump_constructor(instruction[25:0], adder_mux[31:28], jump_address);
