@@ -82,7 +82,7 @@ module control (input [31:26] opcode, output reg regdst,jump,branch,memread,memt
     // memwrite
     memwrite <= (opcode ==`SW) ? 1 : 0;
 
-    // alusrc
+    // alusrc ("Selects the second source operand for the ALU (rt or sign-extended immediate...")
     alusrc <= (opcode==`ADDI||opcode==`ORI||opcode==`LW||opcode==`SW)?1:0;
 
     // Only sw and beq/bne don't write to a reg (regdst=x, regwrite=0, memtoreg=x)
@@ -91,6 +91,7 @@ module control (input [31:26] opcode, output reg regdst,jump,branch,memread,memt
     // Invert ALU Zero signal?
     // Subtract OP results in Zero=1 when ==, so flip Zero when checking !=
     invertzero <= (opcode == `BNE) ? 1 : 0;
+
 
     $display("opcode=%b, jump=%b", opcode, jump);
   end
