@@ -28,6 +28,19 @@ module adder (input [31:0] a, input [31:0] b, output [31:0] out);
     // $display("adder out: %h", out);
 endmodule
 
+module and1_2(input a, b, output reg out);
+  always @(*) begin
+    out = a & b;
+  end
+endmodule
+
+// Inverter outputs the inverse of the input if control is 1.
+module inverter(input in, control, output reg out);
+  always @(*) begin
+    out = (control) ? ~in : in;
+  end
+endmodule
+
 module instruction_memory (input [31:0] address, output [31:0] instruction);
   reg [31:0] mem [32'h0100000: 32'h0101000];
   initial begin
@@ -39,7 +52,7 @@ module instruction_memory (input [31:0] address, output [31:0] instruction);
   assign instruction = mem[address[31:2]];
 endmodule
 
-module mux2_1 (input high_a, input [31:0] a, input [31:0] b, output [31:0] out);
+module mux32_2 (input [31:0] a, b, input high_a, output [31:0] out);
   assign out = high_a ? a : b;
   always @(high_a) begin
     $display("high_a=%d, out=%h", high_a, out);
@@ -63,8 +76,28 @@ endmodule
 
 // -------------------------- //
 
-module registers(input [25:21] read_reg1, input [20:16] read_reg2, input [15:11] write_reg, input [31:0] write_data, input clk, output reg [31:0] read_data1, read_data2);
-
+module registers(input [25:21] read_reg1,
+                input [20:16] read_reg2,
+                input [15:11] write_reg,
+                input [31:0] write_data,
+                input regwrite,
+                input clk,
+                output reg [31:0] read_data1, read_data2);
+  reg [32:0] [32:0] reg_file;
+  initial begin
+    reg_file = 0;
+  end
+  always @(posedge clk) begin
+    read_data1 = reg_file[read_reg1];
+    read_data2 = reg_file[read_reg2];
+  end
+  always @(negedge clk) begin
+    if (regwrite) begin
+      reg_file[write_reg] = write_data;
+    end
+    else begin
+    end
+  end
 endmodule
 
 // -------- Memory ---------- //
