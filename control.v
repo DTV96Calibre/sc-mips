@@ -60,7 +60,10 @@ module control (input [31:26] opcode,
 endmodule
 // -------------------------------------------------------
 
-module ALU_control (input [3:0] aluop_from_control, input [5:0] functioncode, input rtype, output reg [3:0] aluop_out);
+module ALU_control (input [3:0] aluop_from_control,
+                    input [5:0] functioncode,
+                    input rtype,
+                    output reg [3:0] aluop_out);
   always @(*) begin
     if (rtype) begin
       case(functioncode)
