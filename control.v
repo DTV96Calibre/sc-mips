@@ -1,7 +1,12 @@
 `include "mips.h"
 
 // -------------CONTROL-----------------------------------
-module control (input [31:26] opcode, output reg regdst,jump,branch,memread,memtoreg,output reg [3:0] aluop, output reg rtype, memwrite,alusrc,regwrite,invertzero);
+module control (input [31:26] opcode,
+                output reg regdst,jump,
+                branch,memread,memtoreg,
+                output reg [3:0] aluop,
+                output reg rtype, memwrite,
+                alusrc,regwrite,invertzero);
   always @(opcode) begin
     // Regdst (there are fewer 0s than 1s so checked for 0s)--------VVVVVVV
     regdst <= (opcode == `ADDI || opcode == `ORI || opcode == `LW) ? 0 : 1;
