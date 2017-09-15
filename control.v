@@ -1,7 +1,7 @@
 `include "mips.h"
 
 // -------------CONTROL-----------------------------------
-module control (input [31:26] opcode, output reg regdst,jump,branch,memread,memtoreg,output reg [3:0] aluop, output reg memwrite,alusrc,regwrite,invertzero);
+module control (input [31:26] opcode, output reg regdst,jump,branch,memread,memtoreg,output reg [3:0] aluop, output reg rtype, memwrite,alusrc,regwrite,invertzero);
   always @(opcode) begin
     // Regdst (there are fewer 0s than 1s so checked for 0s)--------VVVVVVV
     regdst <= (opcode == `ADDI || opcode == `ORI || opcode == `LW) ? 0 : 1;
@@ -34,6 +34,8 @@ module control (input [31:26] opcode, output reg regdst,jump,branch,memread,memt
       default: aluop = `ALU_undef;
     endcase;
 
+    rtype <= (opcode == 6'h0) ? 1 : 0;
+
     // memwrite
     memwrite <= (opcode ==`SW) ? 1 : 0;
 
@@ -52,3 +54,27 @@ module control (input [31:26] opcode, output reg regdst,jump,branch,memread,memt
   end
 endmodule
 // -------------------------------------------------------
+
+module ALU_control (input [3:0] aluop_from_control, input [5:0] functioncode, input rtype, output reg [3:0] aluop_out);
+  always @(*) begin
+    if (rtype) begin
+      case(functioncode)
+        `AND: aluop_out = `ALU_AND;
+        `OR: aluop_out = `ALU_OR;
+        `ORI: aluop_out = `ALU_OR;
+        `ADD: aluop_out = `ALU_add;
+        `ADDI: aluop_out = `ALU_add;
+        `LW: aluop_out = `ALU_add;
+        `SW: aluop_out = `ALU_add;
+        `SUB: aluop_out = `ALU_sub;
+        `BEQ: aluop_out = `ALU_sub;
+        `BNE: aluop_out = `ALU_sub;
+        `SLT: aluop_out = `ALU_slt;
+        default: aluop_out = `ALU_undef;
+      endcase
+    end
+    else begin
+      aluop_out = aluop_from_control;
+    end
+  end
+endmodule

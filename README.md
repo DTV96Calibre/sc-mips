@@ -18,15 +18,19 @@ The ALU control accepts an aluop code from the
 The control module supplies signals controlling the execution of the data pipeline. This module examines the instruction's top six bits (the opcode), and sets the appropriate control signals. Generally this could be done with case statements, though in some cases it was easier to implement with simpler conditional logic.
 
 Additions made to this module that aren't reflected in the above diagram include an "invertzero" signal that causes the ALU Zero signal to be inverted. This allows for the implementation of a number of instructions that requires the ability to detect when two values are not equal, such as in the BNE operation.
-<!-- An "alucontrol" signal was also added to allow the detection of R type instructions and the appropriate multiplexing of the aluop code. -->
+An "rtype" signal was also added to allow the detection of R type instructions and the appropriate multiplexing of the aluop code. rtype is 1 when the functioncode should be used to control the alu, and 0 when the aluop code should be gotten from the control module.
 
 ### Instruction memory
 The instruction memory module stores the program to be executed. When running the simulation, a file containing instructions is read into this module's memory, which is than fed into the rest of the processor. This module uses the program counter (PC) to select an instruction set the output.
 
 ## Compilation
+Compiling the iverilog simulations requires a valid installation of iverilog on your path. Use the command "iverilog processor.v -o processor" to compile the processor and create an executable called "processor". The processor.v file is the main file and uses include statements to include the other relevant verilog files.
 
 ## Execution
+The processor expects the presence of an input file "program.in" in the directory in which the processor executable is run from. "program.in" is loaded into instruction memory at started and used to execute the encoded program.
 
 ## Testing
+Tests are located in the tests.v file. Simply use iverilog to compile this file and execute the output.
+Tests will report expected values and the values actually produced. <!-- This should probably be more automated-->
 
 [cpu_diagram]: https://lh5.googleusercontent.com/NwP8dOkuRLI_ZRfyuvTKvwxYIAPsh-5ybUH5nD7E9MHUPgUhMHwgy5FYApsfa04WxQVWCCVFi3B92G23vY2J-C6IBIPD_jbU87XDDT4sSBBx3Cg_Al6wVIbieDD8Be8fdw8Upr6UK7KhsTl5rg "Patterson & Hennessy single cycle CPU"
