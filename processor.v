@@ -44,7 +44,7 @@ endmodule
 module instruction_memory (input [31:0] address, output [31:0] instruction);
   reg [31:0] mem [32'h0100000: 32'h0101000];
   initial begin
-    $readmemh("jumps.in", mem);
+    $readmemh("program.in", mem);
   end
   always @(instruction)
     $display("memory address=%h, instruction=%h", address, instruction);
@@ -53,6 +53,13 @@ module instruction_memory (input [31:0] address, output [31:0] instruction);
 endmodule
 
 module mux32_2 (input [31:0] a, b, input high_a, output [31:0] out);
+  assign out = high_a ? a : b;
+  always @(high_a) begin
+    $display("high_a=%d, out=%h", high_a, out);
+  end
+endmodule
+
+module mux5_2 (input [4:0] a, b, input high_a, output [4:0] out);
   assign out = high_a ? a : b;
   always @(high_a) begin
     $display("high_a=%d, out=%h", high_a, out);
@@ -103,6 +110,16 @@ endmodule
 // -------- Memory ---------- //
 module data_memory(input [31:0] address, write_data, input memwrite, memread, clk, output reg [31:0] read_data);
   reg [31:0] mem[0:255];
+  always @(posedge clk) begin
+    if (memwrite) begin
+      mem[address] = write_data;
+    end else;
+  end
+  always @(negedge clk) begin
+    if (memread) begin
+      read_data = mem[address];
+    end
+  end
 endmodule
 
 module jump_address_constructor(input [25:0] instruction, input [31:28] PC_plus_4, output reg [31:0] out);
