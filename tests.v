@@ -65,19 +65,30 @@ module complete_processor(output [31:0] instruction);
     four = 4;
 endmodule
 
-module test;
-  wire [31:0] instruction;
-  complete_processor processor(instruction);
-  initial begin
-    //jump_address = 32'h00400000;
-    $dumpfile("processor.vcd");
-    $dumpvars(0, processor);
-    $monitor("instruction: %h\n", instruction);
-    #2000; $finish;
-  end
-  always @(instruction) begin
-    if (instruction == 0)
-      $finish;
-    else;
-  end
+// module test;
+//   wire [31:0] instruction;
+//   complete_processor processor(instruction);
+//   initial begin
+//     //jump_address = 32'h00400000;
+//     $dumpfile("processor.vcd");
+//     $dumpvars(0, processor);
+//     $monitor("instruction: %h\n", instruction);
+//     #2000; $finish;
+//   end
+//   always @(instruction) begin
+//     if (instruction == 0)
+//       $finish;
+//     else;
+//   end
+// endmodule
+
+module test_data_memory;
+  reg [31:0] address1;
+  reg [31:0] write_data;
+  reg memwrite, memread;
+  wire clock;
+
+  clock_gen clk(clock);
+  
+
 endmodule
