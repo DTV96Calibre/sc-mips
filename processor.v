@@ -13,23 +13,24 @@ endmodule
 
 module PC (input [31:0] new_pc, input clk, output reg [31:0] PC);
   initial begin
-    PC = 32'h00400000;
+    PC = 32'h00400020;
   end
-  always @(posedge clk)
+  always @(posedge clk) begin
+    //$display("PC:%h", new_pc);
     PC = new_pc;
-  // always @(posedge clk) begin
-  //   PC = PC + 4;
-  // end
+  end
 endmodule
 
 module adder (input [31:0] a, input [31:0] b, output [31:0] out);
+  // always @(*) begin
+  //   //$display("%m a:%h, b:%h, out:%h", a, b, out);
+  // end
   assign out = a + b;
-  // always @(out)
-    // $display("adder out: %h", out);
 endmodule
 
 module and1_2(input a, b, output reg out);
   always @(*) begin
+    //$display("%m a:%b, b:%b, out:%b", a, b, out);
     out = a & b;
   end
 endmodule
@@ -37,6 +38,7 @@ endmodule
 // Inverter outputs the inverse of the input if control is 1.
 module inverter(input in, control, output reg out);
   always @(*) begin
+    // $display("%m in:%b, out:%b, control:%b", in, out, control);
     out = (control) ? ~in : in;
   end
 endmodule
@@ -44,30 +46,34 @@ endmodule
 module instruction_memory (input [31:0] address, output [31:0] instruction);
   reg [31:0] mem [32'h0100000: 32'h0101000];
   initial begin
-    $readmemh("program.in", mem);
+    $readmemh("add_test.v", mem);
   end
-  always @(instruction)
-    $display("memory address=%h, instruction=%h", address, instruction);
+  // always @(instruction)
+  //   $display("instruction address=%h, instruction=%h", address, instruction);
 
   assign instruction = mem[address[31:2]];
 endmodule
 
 module mux32_2 (input [31:0] a, b, input high_a, output [31:0] out);
   assign out = high_a ? a : b;
-  always @(high_a) begin
-    $display("high_a=%d, out=%h", high_a, out);
-  end
+  // always @(high_a) begin
+  //   $display("%m high_a=%d, out=%h", high_a, out);
+  // end
 endmodule
 
 module mux5_2 (input [4:0] a, b, input high_a, output [4:0] out);
   assign out = high_a ? a : b;
-  always @(high_a) begin
-    $display("high_a=%d, out=%h", high_a, out);
-  end
+  // always @(high_a) begin
+  //   $display("%m high_a=%d, out=%h", high_a, out);
+  // end
 endmodule
 
 // --------- ALU ------------ //
 module ALU (input [3:0] aluop, input [31:0] a, b, output reg [31:0] out, output reg zero);
+  initial begin
+    out = 0;
+    zero = 0;
+  end
   always @(*) begin
     case (aluop)
       `ALU_AND: out = a & b;
@@ -88,22 +94,40 @@ module registers(input [25:21] read_reg1,
                 input [15:11] write_reg,
                 input [31:0] write_data,
                 input regwrite,
+                input syscall,
                 input clk,
                 output reg [31:0] read_data1, read_data2);
   reg [32:0] [32:0] reg_file;
   initial begin
     reg_file = 0;
+    read_data1 = 0;
+    read_data2 = 0;
   end
-  always @(posedge clk) begin
+  // Expose some regs to gtkwave
+  reg [31:0] v0, a0;
+  always @(*) begin
+    v0 = reg_file[`v0];
+    a0 = reg_file[`a0];
+  end
+
+  always @(negedge clk) begin
     read_data1 = reg_file[read_reg1];
     read_data2 = reg_file[read_reg2];
   end
-  always @(negedge clk) begin
+  always @(posedge clk) begin
     if (regwrite) begin
       reg_file[write_reg] = write_data;
+      reg_file[`r0] = 0; // Ensure r0 is always 0
     end
     else begin
     end
+  end
+  always @(posedge syscall) begin
+    case (reg_file[`v0])
+      1/*print*/: $strobe("%d", reg_file[`a0]);
+      10/*exit*/: $finish;
+      default: $display("Got an unsupported syscall code:%h", reg_file[`v0]);
+    endcase;
   end
 endmodule
 
@@ -124,7 +148,7 @@ endmodule
 
 module jump_address_constructor(input [25:0] instruction, input [31:28] PC_plus_4, output reg [31:0] out);
   always @(*)
-    out = {PC_plus_4, (instruction<<2)};
+    out = {PC_plus_4, ({2'b00, instruction}<<2)};
 endmodule
 
 

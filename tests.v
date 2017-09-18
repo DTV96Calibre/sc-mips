@@ -1,7 +1,7 @@
 `include "processor.v"
 `include "mips.h"
 
-module complete_processor(output [31:0] instruction);
+module complete_processor(output [31:0] instruction, output clock);
   /* ------- Wires (and regs) -------- */
   wire clock;
   wire [31:0] pc_adder_mux/*PC+4*/, branch_adder_mux;
@@ -16,7 +16,8 @@ module complete_processor(output [31:0] instruction);
   wire [31:0] read_data1,read_data2/*From registers*/, alusrc_mux_output, alu_result;
   /* Control */
   wire regdst, jump, branch, memread, memtoreg, rtype, regwrite, alusrc, memwrite, invertzero;
-  wire branch_zero_and, branch_mux_control;
+  wire syscall;
+  wire branch_zero_and_output, branch_mux_control;
 
   /* Register */
   wire [4:0] regdst_mux_output;
@@ -34,9 +35,11 @@ module complete_processor(output [31:0] instruction);
   control control(instruction[`op], regdst, jump, branch, memread, memtoreg,
                   aluop_from_control, rtype, memwrite, alusrc, regwrite, invertzero);
 
+  SYSCALL_controller syscaller(instruction, clock, syscall);
+
   registers register_file(instruction[`rs], instruction[`rt],
                           regdst_mux_output, memtoreg_mux_output,
-                          regwrite, clock,
+                          regwrite, syscall, clock,
                           read_data1, read_data2);
   mux32_2 memtoreg_mux(read_data/*from data memory*/, alu_result, memtoreg, memtoreg_mux_output);
   mux5_2 regdst_mux(instruction[`rd], instruction[`rt], regdst, regdst_mux_output);
@@ -54,9 +57,9 @@ module complete_processor(output [31:0] instruction);
   jump_address_constructor jump_constructor(instruction[`target], pc_adder_mux[31:28], jump_address);
 
   /* Branching logic */
-  and branch_zero_and(branch, zero, branch_zero_and);
+  and1_2 branch_zero_and(branch, zero, branch_zero_and_output);
   // Inverter for detecting when ALU is not zero, used for BNE
-  inverter invertzero_inverter(branch_zero_and, invertzero, branch_mux_control);
+  inverter invertzero_inverter(branch_zero_and_output, invertzero, branch_mux_control);
   mux32_2 branch_mux(branch_adder_mux, pc_adder_mux, branch_mux_control, branch_address);
   adder branch_adder(pc_adder_mux,
                     {16'h0, instruction[15:0]}<<2/*sign-extend from 16 to 32 then shift left 2*/,
@@ -65,30 +68,31 @@ module complete_processor(output [31:0] instruction);
     four = 4;
 endmodule
 
-// module test;
-//   wire [31:0] instruction;
-//   complete_processor processor(instruction);
-//   initial begin
-//     //jump_address = 32'h00400000;
-//     $dumpfile("processor.vcd");
-//     $dumpvars(0, processor);
-//     $monitor("instruction: %h\n", instruction);
-//     #2000; $finish;
-//   end
-//   always @(instruction) begin
-//     if (instruction == 0)
-//       $finish;
-//     else;
-//   end
-// endmodule
-
-module test_data_memory;
-  reg [31:0] address1;
-  reg [31:0] write_data;
-  reg memwrite, memread;
+module test;
+  wire [31:0] instruction;
   wire clock;
-
-  clock_gen clk(clock);
-  
-
+  complete_processor processor(instruction, clock);
+  initial begin
+    //jump_address = 32'h00400000;
+    $dumpfile("processor.vcd");
+    $dumpvars(0, processor);
+    //$monitor("instruction: %h, clock:%b\n", instruction, clock);
+    #2000; $finish;
+  end
+  // always @(clock) begin
+  //   if (instruction === `undefined) begin
+  //     $strobe("Undefined instruction"); $finish; end
+  //   else;
+  // end
 endmodule
+
+// module test_data_memory;
+//   reg [31:0] address1;
+//   reg [31:0] write_data;
+//   reg memwrite, memread;
+//   wire clock;
+//
+//   clock_gen clk(clock);
+//
+//
+// endmodule
