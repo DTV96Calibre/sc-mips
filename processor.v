@@ -13,7 +13,8 @@ endmodule
 
 module PC (input [31:0] new_pc, input clk, output reg [31:0] PC);
   initial begin
-    PC = 32'h00400020;
+//    PC = 32'h00400020;
+      PC = 32'h00000000;
   end
   always @(posedge clk) begin
     //$display("PC:%h", new_pc);
@@ -44,14 +45,15 @@ module inverter(input in, control, output reg out);
 endmodule
 
 module instruction_memory (input [31:0] address, output [31:0] instruction);
-  reg [31:0] mem [32'h0100000: 32'h0101000];
+//  reg [31:0] mem [32'h0100000: 32'h0101000];// 相等于  reg [31:0] mem [0: 4095]
+  reg [31:0] mem [0: 4095];
   initial begin
-    $readmemh("add_test.v", mem);
+    $readmemh("add_test.v", mem);// 载入测试指令
   end
   // always @(instruction)
   //   $display("instruction address=%h, instruction=%h", address, instruction);
 
-  assign instruction = mem[address[31:2]];
+  assign instruction = mem[address[31:2]];//相当于移位操作
 endmodule
 
 module mux32_2 (input [31:0] a, b, input high_a, output [31:0] out);
@@ -103,6 +105,7 @@ module registers(input [25:21] read_reg1,
     read_data1 = 0;
     read_data2 = 0;
   end
+  
   // Expose some regs to gtkwave
   reg [31:0] v0, a0;
   always @(*) begin

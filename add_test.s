@@ -5,7 +5,7 @@
 .text
 
 __start:	        # define entry point for gcc
-li $t0, 1
+li $t0, 1           # 用于将立即数传送给寄存器
 li $t1, 2
 
 li $v0, 1		# setup for print integer syscall

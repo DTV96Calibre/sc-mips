@@ -35,35 +35,41 @@ module complete_processor(output [31:0] instruction, output clock);
   control control(instruction[`op], regdst, jump, branch, memread, memtoreg,
                   aluop_from_control, rtype, memwrite, alusrc, regwrite, invertzero);
 
-  SYSCALL_controller syscaller(instruction, clock, syscall);
+  SYSCALL_controller syscaller(instruction, clock, syscall);//!
 
   registers register_file(instruction[`rs], instruction[`rt],
                           regdst_mux_output, memtoreg_mux_output,
                           regwrite, syscall, clock,
                           read_data1, read_data2);
-  mux32_2 memtoreg_mux(read_data/*from data memory*/, alu_result, memtoreg, memtoreg_mux_output);
-  mux5_2 regdst_mux(instruction[`rd], instruction[`rt], regdst, regdst_mux_output);
+
+  mux32_2 memtoreg_mux(read_data/*from data memory*/, alu_result, memtoreg, memtoreg_mux_output);//用于决定写入寄存器堆的结果
+
+  mux5_2 regdst_mux(instruction[`rd], instruction[`rt], regdst, regdst_mux_output);//用于决定写入的寄存器号
 
   data_memory dmem(alu_result, read_data2, memwrite, memread, clock, read_data);
 
   /* ALU */
   ALU_control alu_control(aluop_from_control, instruction[`function], rtype, aluop_to_alu);
+
   ALU alu(aluop_to_alu, read_data1, alusrc_mux_output, alu_result, zero);
+
   mux32_2 alusrc_mux({16'h0, instruction[15:0]}/*sign-extend from 16 to 32*/,
-                      read_data2, alusrc, alusrc_mux_output);
+                      read_data2, alusrc, alusrc_mux_output);//决定 ALU 的操作数
 
   /* Jumping logic */
-  mux32_2 jump_mux(jump_address, branch_address, jump, mux_pc);
-  jump_address_constructor jump_constructor(instruction[`target], pc_adder_mux[31:28], jump_address);
+  mux32_2 jump_mux(jump_address, branch_address, jump, mux_pc);//跳转、分支指令下的下一个 pc 地址
+  
+  jump_address_constructor jump_constructor(instruction[`target], pc_adder_mux[31:28], jump_address);// j、jal 指令跳转地址合成
 
   /* Branching logic */
-  and1_2 branch_zero_and(branch, zero, branch_zero_and_output);
+  and1_2 branch_zero_and(branch, zero, branch_zero_and_output);//分支指令下 mux 的选择信号
+
   // Inverter for detecting when ALU is not zero, used for BNE
-  inverter invertzero_inverter(branch_zero_and_output, invertzero, branch_mux_control);
-  mux32_2 branch_mux(branch_adder_mux, pc_adder_mux, branch_mux_control, branch_address);
+  inverter invertzero_inverter(branch_zero_and_output, invertzero, branch_mux_control);//支持 bne 指令功能的反相器
+  mux32_2 branch_mux(branch_adder_mux, pc_adder_mux, branch_mux_control, branch_address);// 分支指令下选择的下一个 pc 地址
   adder branch_adder(pc_adder_mux,
                     {16'h0, instruction[15:0]}<<2/*sign-extend from 16 to 32 then shift left 2*/,
-                    branch_adder_mux);
+                    branch_adder_mux);//若执行分支的话计算的下一条 pc 地址
   initial
     four = 4;
 endmodule
